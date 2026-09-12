@@ -1,4 +1,12 @@
-from pymongo import MongoClient
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import os
 
-client = MongoClient("mongodb://localhost:27017/")
-db = client["ticket_system"]
+def get_db():
+    conn = psycopg2.connect(
+        host="localhost",
+        database="ticket_system",
+        user=os.getenv("USER"),
+        cursor_factory=RealDictCursor
+    )
+    return conn

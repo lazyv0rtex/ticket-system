@@ -20,7 +20,7 @@ def get_tickets():
     return get_all_tickets()
 
 @router.get("/{ticket_id}")
-def get_ticket_by_id(ticket_id: str):
+def get_ticket_by_id(ticket_id: int):
     return get_ticket(ticket_id)
 
 @router.post("/")
@@ -28,9 +28,9 @@ def create_ticket_endpoint(ticket: TicketCreate):
     return create_ticket(ticket.model_dump())
 
 @router.put("/{ticket_id}")
-def update_ticket_endpoint(ticket_id: str, ticket: TicketUpdate):
+def update_ticket_endpoint(ticket_id: int, ticket: TicketUpdate):
     return update_ticket(ticket_id, ticket.model_dump())
 
 @router.delete("/{ticket_id}")
-def delete_ticket_endpoint(ticket_id: str):
+def delete_ticket_endpoint(ticket_id: int):
     return delete_ticket(ticket_id)

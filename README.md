@@ -1,6 +1,6 @@
 # Ticket System API
 
-A simple FastAPI help desk with MongoDB.
+A simple FastAPI help desk with PostgreSQL.
 
 ## Setup
 
@@ -9,14 +9,18 @@ A simple FastAPI help desk with MongoDB.
 pip install -r requirements.txt
 ```
 
-2. Install and start MongoDB:
+2. Start PostgreSQL (already installed):
 ```bash
-# macOS
-brew install mongodb-community
-brew services start mongodb-community
+brew services start postgresql@15
 ```
 
-3. Run the app:
+3. Create database and table:
+```bash
+createdb ticket_system
+python3 init_db.py
+```
+
+4. Run the app:
 ```bash
 uvicorn main:app --reload
 ```
