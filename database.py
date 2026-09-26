@@ -1,12 +1,15 @@
-import psycopg2
-from psycopg2.extras import RealDictCursor
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 import os
 
+DATABASE_URL = f"postgresql://{os.getenv('USER')}@localhost/ticket_system"
+
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 def get_db():
-    conn = psycopg2.connect(
-        host="localhost",
-        database="ticket_system",
-        user=os.getenv("USER"),
-        cursor_factory=RealDictCursor
-    )
-    return conn
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

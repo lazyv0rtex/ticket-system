@@ -1,59 +1,40 @@
-from database import get_db
-from test import Address
+from sqlalchemy.orm import Session
+from models.database_models import Ticket
 
-def create_ticket(ticket: dict):
-    print("Creating ticket:", ticket)
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute(
-        "INSERT INTO tickets (title, description, priority, status) VALUES (%s, %s, %s, %s) RETURNING *",
-        (ticket["title"], ticket["description"], ticket["priority"], "open")
+def create_ticket(db: Session, ticket: dict):
+    db_ticket = Ticket(
+        title=ticket["title"],
+        description=ticket["description"],
+        priority=ticket["priority"],
+        user_id=ticket["user_id"],
+        status="open"
     )
-    new_ticket = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return dict(new_ticket)
+    db.add(db_ticket)
+    db.commit()
+    db.refresh(db_ticket)
+    return db_ticket
 
-def get_ticket(ticket_id: int):
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM tickets WHERE id = %s", (ticket_id,))
-    ticket = cur.fetchone()
-    cur.close()
-    conn.close()
-    return dict(ticket) if ticket else None
+def get_ticket(db: Session, ticket_id: int):
+    return db.query(Ticket).filter(Ticket.id == ticket_id).first()
 
-def update_ticket(ticket_id: int, ticket_data: dict):
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute(
-        "UPDATE tickets SET title = %s, description = %s, priority = %s, status = %s WHERE id = %s RETURNING *",
-        (ticket_data["title"], ticket_data["description"], ticket_data["priority"], ticket_data["status"], ticket_id)
-    )
-    updated_ticket = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return dict(updated_ticket) if updated_ticket else None
+def update_ticket(db: Session, ticket_id: int, ticket_data: dict):
+    db_ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+    if db_ticket:
+        db_ticket.title = ticket_data["title"]
+        db_ticket.description = ticket_data["description"]
+        db_ticket.priority = ticket_data["priority"]
+        db_ticket.status = ticket_data["status"]
+        db.commit()
+        db.refresh(db_ticket)
+    return db_ticket
 
-def delete_ticket(ticket_id: int):
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM tickets WHERE id = %s", (ticket_id,))
-    deleted = cur.rowcount > 0
-    conn.commit()
-    cur.close()
-    conn.close()
-    return deleted
+def delete_ticket(db: Session, ticket_id: int):
+    db_ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+    if db_ticket:
+        db.delete(db_ticket)
+        db.commit()
+        return True
+    return False
 
-def get_all_tickets():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM tickets")
-    tickets = cur.fetchall()
-    cur.close()
-    conn.close()
-    return [dict(ticket) for ticket in tickets]
-
-
+def get_all_tickets(db: Session):
+    return db.query(Ticket).all()

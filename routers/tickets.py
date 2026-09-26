@@ -1,6 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
     
 from models.ticket import TicketCreate, TicketUpdate
+from database import get_db
 from services.ticket import (
     create_ticket,
     get_ticket,
@@ -16,21 +18,21 @@ router = APIRouter(
 )
 
 @router.get("/")
-def get_tickets():
-    return get_all_tickets()
+def get_tickets(db: Session = Depends(get_db)):
+    return get_all_tickets(db)
 
 @router.get("/{ticket_id}")
-def get_ticket_by_id(ticket_id: int):
-    return get_ticket(ticket_id)
+def get_ticket_by_id(ticket_id: int, db: Session = Depends(get_db)):
+    return get_ticket(db, ticket_id)
 
 @router.post("/")
-def create_ticket_endpoint(ticket: TicketCreate):
-    return create_ticket(ticket.model_dump())
+def create_ticket_endpoint(ticket: TicketCreate, db: Session = Depends(get_db)):
+    return create_ticket(db, ticket.model_dump())
 
 @router.put("/{ticket_id}")
-def update_ticket_endpoint(ticket_id: int, ticket: TicketUpdate):
-    return update_ticket(ticket_id, ticket.model_dump())
+def update_ticket_endpoint(ticket_id: int, ticket: TicketUpdate, db: Session = Depends(get_db)):
+    return update_ticket(db, ticket_id, ticket.model_dump())
 
 @router.delete("/{ticket_id}")
-def delete_ticket_endpoint(ticket_id: int):
-    return delete_ticket(ticket_id)
+def delete_ticket_endpoint(ticket_id: int, db: Session = Depends(get_db)):
+    return delete_ticket(db, ticket_id)
