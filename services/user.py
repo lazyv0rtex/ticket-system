@@ -1,11 +1,13 @@
 from sqlalchemy.orm import Session
 from models.database_models import User
+from auth import hash_password
 
 def create_user(db: Session, user: dict):
     db_user = User(
         name=user["name"],
         email=user["email"],
-        username=user["username"]
+        username=user["username"],
+        hashed_password=hash_password(user["password"])
     )
     db.add(db_user)
     db.commit()

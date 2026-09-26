@@ -1,12 +1,12 @@
 from sqlalchemy.orm import Session
 from models.database_models import Ticket
 
-def create_ticket(db: Session, ticket: dict):
+def create_ticket(db: Session, ticket: dict, user_id: int):
     db_ticket = Ticket(
         title=ticket["title"],
         description=ticket["description"],
         priority=ticket["priority"],
-        user_id=ticket["user_id"],
+        user_id=user_id,
         status="open"
     )
     db.add(db_ticket)

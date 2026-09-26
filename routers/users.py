@@ -1,14 +1,14 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from models.user import UserCreate, UserUpdate
+from models.database_models import User
 from database import get_db
+from auth import get_current_user
 from services.user import (
     create_user,
-    get_user,
-    get_all_users,
-    update_user,
-    delete_user
+    update_user
 )
 
 router = APIRouter(
@@ -16,22 +16,25 @@ router = APIRouter(
     tags=["Users"]
 )
 
-@router.get("/")
-def get_users(db: Session = Depends(get_db)):
-    return get_all_users(db)
-
-@router.get("/{user_id}")
-def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
-    return get_user(db, user_id)
+@router.get("/me")
+def get_current_user_info(current_user: User = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "name": current_user.name,
+        "email": current_user.email,
+        "username": current_user.username
+    }
 
 @router.post("/")
 def create_user_endpoint(user: UserCreate, db: Session = Depends(get_db)):
-    return create_user(db, user.model_dump())
+    try:
+        return create_user(db, user.model_dump())
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username or email already exists"
+        )
 
 @router.put("/{user_id}")
 def update_user_endpoint(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
     return update_user(db, user_id, user.model_dump())
-
-@router.delete("/{user_id}")
-def delete_user_endpoint(user_id: int, db: Session = Depends(get_db)):
-    return delete_user(db, user_id)
