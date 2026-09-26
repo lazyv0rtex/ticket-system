@@ -1,4 +1,15 @@
-from pymongo import MongoClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+import os
 
-client = MongoClient("mongodb://localhost:27017/")
-db = client["ticket_system"]
+DATABASE_URL = f"postgresql://{os.getenv('USER')}@localhost/ticket_system"
+
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
